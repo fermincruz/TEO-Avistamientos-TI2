@@ -1,263 +1,275 @@
-import avistamientos as av
-from datetime import datetime
+import avistamientos
+from datetime import datetime, date
 from coordenadas import *
-import locale
 
-def mostrar_iterable_enumerado(iterable):
-    for indx, elem in enumerate(iterable, 1):
-        print(f"\t{indx}-{elem}")
 
-def mostrar_diccionario(dicc):
-    for clave, valor in dicc.items():
-        print(f"{clave} ==>")
-        mostrar_iterable_enumerado(valor)
-
-def mostrar_diccionario2(dicc):
-    for clave, valor in dicc.items():
-        print(f"\t{clave}: {valor}")
-
-def test_lee_avistamientos(avistamientos):
-    print(f"Se han leido {len(avistamientos)}  avistamientos")
+def test_lee_avistamientos(datos):
+    print("Test de lee_avistamientos")
+    print(f"Se han leido {len(datos)}  avistamientos")
     print("Los cinco avistamientos primeros son: ")
-    mostrar_iterable_enumerado(avistamientos [:5])
+    for a in datos[:5]:
+        print("\t", a)
     print("Los cinco avistamientos últimos son: ")
-    mostrar_iterable_enumerado(avistamientos [-5:])
+    for a in datos[-5:]:
+        print("\t", a)
+    print("=======================================================\n")
 
-def test_numero_avistamientos_fecha(avistamientos, fecha):
-    res = av.numero_avistamientos_fecha(avistamientos, fecha)
-    fechastr = fecha.strftime("%m/%d/%Y")
-    print(f"El día {fechastr} se produjeron {res} avistamientos")
 
-def test_formas_estados(avistamientos, estados): 
-    estados_str = ', '.join(estados)
-    res = av.formas_estados(avistamientos, estados)
-    print(f"Número de formas distintas observadas en los estados {estados_str}: {res}")
-    
-def test_duracion_total(avistamientos, estado):
-    res = av.duracion_total(avistamientos, estado)
-    print(f"Duración total de los avistamientos en {estado}: {res} segundos.")
- 
-def test_avistamientos_cercanos_ubicacion(avistamientos, ubicacion, radio):
-    res = av.avistamientos_cercanos_ubicacion(avistamientos, ubicacion,radio)
-    print(f"Avistamientos cercanos a ({ubicacion.latitud}, {ubicacion.longitud}):" )
-    mostrar_iterable_enumerado(res)
+def test_numero_avistamientos_fecha(datos):
+    print("Test de numero_avistamientos_fecha")
+    res = avistamientos.numero_avistamientos_fecha(datos, date(2005, 5, 1))
+    print(f"El día 5 de enero de 2005 se produjeron {res} avistamientos")
+    print("=======================================================\n")
 
-def test_avistamiento_mayor_duracion(avistamientos, forma):
-    res = av.avistamiento_mayor_duracion(avistamientos, forma)
-    print(f"Avistamiento de forma \'{forma}\' de mayor duración: {res}")
 
-def test_avistamiento_cercano_mayor_duracion(avistamientos, coordenadas, radio=0.5):
-    duracion, comentario = av.avistamiento_cercano_mayor_duracion(avistamientos, coordenadas, radio)
-    print(f"Duración del avistamiento más largo en un entorno de radio {radio} sobre\
-             las coordenadas {coordenadas.latitud}, {coordenadas.longitud}: {duracion}")
+def test_formas_estados(datos):
+    print("Test de formas_estados")
+    res = avistamientos.formas_estados(datos, {"in", "nm", "pa", "wa"})
+    print(
+        f"Número de formas distintas observadas en los estados in, nm, pa o wa: {res}"
+    )
+    print("=======================================================\n")
+
+
+def test_duracion_total(datos):
+    print("Test de duracion_total")
+    res = avistamientos.duracion_total(datos, {"in", "nm", "pa", "wa"})
+    print(
+        f"Duración total de los avistamientos en in, nm, pa o wa: {res} segundos."
+    )
+    print("=======================================================\n")
+
+
+def test_avistamientos_cercanos_ubicacion(datos):
+    print("Test de avistamientos_cercanos_ubicacion")
+    res = avistamientos.avistamientos_cercanos_ubicacion(
+        datos, Coordenadas(40.1933333, -85.3863889), 0.1
+    )
+    print("Avistamientos cercanos a (40.1933333, -85.3863889):")
+    for a in res:
+        print("\t", a)
+    print("=======================================================\n")
+
+
+def test_avistamiento_mayor_duracion(datos):
+    print("Test de avistamiento_mayor_duracion")
+    res = avistamientos.avistamiento_mayor_duracion(datos, "circle")
+    print(f"Avistamiento de forma 'circle' de mayor duración: {res}")
+    print("=======================================================\n")
+
+
+def test_avistamiento_cercano_mayor_duracion(datos):
+    print("Test de avistamiento_cercano_mayor_duracion")
+    duracion, comentario = avistamientos.avistamiento_cercano_mayor_duracion(
+        datos, Coordenadas(40.1933333, -85.3863889), 0.5
+    )
+    print(
+        f"Duración del avistamiento más largo en un entorno de radio 0.5 sobre\
+             las coordenadas (40.1933333, -85.3863889): {duracion}"
+    )
     print(f"Comentario: {comentario}")
+    print("=======================================================\n")
 
-def test_avistamientos_fechas(avistamientos, fecha_inicial=None, fecha_final=None):
-    avistamientos_fec = av.avistamientos_fechas(avistamientos, \
-                                         fecha_inicial, fecha_final)
-    print(msg_avistamientos_fecha(fecha_inicial, fecha_final))     
-    #mostrar_iterable_enumerado(avistamientos_fec)
-    print(f"Total avistamientos {len(avistamientos_fec)}")                                
-  
-### Función auxliar para generar un mensaje personalizado                
-def msg_avistamientos_fecha(fecha_inicial=None, fecha_final=None):    
-    if fecha_inicial == None and fecha_final == None:
-        msg = "Mostrando todos los avistamientos"
-    elif fecha_inicial== None:
-        mes_final = fecha_final.strftime("%B")
-        msg = f"Mostrando los avistamientos anteriores al {fecha_final.day} de {mes_final} de {fecha_final.year}: "
-    elif fecha_final== None:
-        mes_inicial = fecha_inicial.strftime("%B")
-        msg = f"Mostrando los avistamientos posteriores al {fecha_inicial.day} de {mes_inicial} de {fecha_inicial.year}: "
-    else:
-        mes_inicial = fecha_inicial.strftime("%B")
-        mes_final = fecha_final.strftime("%B")
-        msg= f"Mostrando los avistamientos entre el {fecha_inicial.day} de {mes_inicial} de {fecha_inicial.year} y "+ \
-        f"el {fecha_final.day} de {mes_final} de {fecha_final.year}: "
-    return msg
 
-def test_comentario_mas_largo(avistamientos, anyo, palabra):
-    print(f'El avistamiento con el comentario más largo de {anyo} incluyendo la palabra "{palabra}" es:')     
-    print(av.comentario_mas_largo(avistamientos, anyo, palabra))
+def test_avistamientos_fechas_1(datos):
+    print("Test de avistamientos_fechas (1 de 3)")
+    avistamientos_fec = avistamientos.avistamientos_fechas(
+        datos, date(2005, 5, 1), date(2005, 5, 1)
+    )
+    print("Mostrando los avistamientos del 1 de mayo de 2005:")
+    for a in avistamientos_fec:
+        print("\t", a)
+    print("=======================================================\n")
 
-def test_media_dias_entre_avistamientos(avistamientos, anyo=None):
-    msg = "La media entre dos avistamientos consecutivos"
-    if anyo != None:
-        msg+= f" del año {anyo}"
-    msg+= " es"
-    media = av.media_dias_entre_avistamientos(avistamientos, anyo)
-    print(f"{msg}: {media}")
 
-def test_avistamientos_por_fecha(avistamientos):
-    indice = av.avistamientos_por_fecha(avistamientos)
-    print("Avistamientos por fecha  (solo se muestran 3 fechas aleatorias):", )
-    lista = list(indice.items())
-    mini_dict = dict(lista[:3])
-    mostrar_diccionario(mini_dict)
+def test_avistamientos_fechas_2(datos):
+    print("Test de avistamientos_fechas (2 de 3))")
+    avistamientos_fec = avistamientos.avistamientos_fechas(
+        datos, fecha_final=date(2005, 5, 1)
+    )
+    print("Avistamientos hasta el 1 de mayo de 2005:", len(avistamientos_fec))
+    print("=======================================================\n")
 
-def test_formas_por_mes(avistamientos):
-    indice = av.formas_por_mes(avistamientos)
+
+def test_avistamientos_fechas_3(datos):
+    print("Test de avistamientos_fechas (3 de 3))")
+    avistamientos_fec = avistamientos.avistamientos_fechas(
+        datos, fecha_inicial=date(2005, 5, 1)
+    )
+    print("Avistamientos desde el 1 de mayo de 2005:", len(avistamientos_fec))
+    print("=======================================================\n")
+
+
+def test_comentario_mas_largo(datos):
+    print("Test de comentario_mas_largo")
+    print(
+        f'El avistamiento con el comentario más largo de 2005 incluyendo la palabra "ufo" es:'
+    )
+    print(avistamientos.comentario_mas_largo(datos, 2005, "ufo"))
+    print("=======================================================\n")
+
+
+def test_media_dias_entre_avistamientos_1(datos):
+    print("Test de media_dias_entre_avistamientos (1 de 2)")
+    media = avistamientos.media_dias_entre_avistamientos(datos)
+    print("La media entre dos avistamientos consecutivos es", media)
+    print("=======================================================\n")
+
+
+def test_media_dias_entre_avistamientos_2(datos):
+    print("Test de media_dias_entre_avistamientos (2 de 2)")
+    media = avistamientos.media_dias_entre_avistamientos(datos, 1979)
+    print("La media entre dos avistamientos consecutivos en 1979 es", media)
+    print("=======================================================\n")
+
+
+def test_avistamientos_por_fecha(datos):
+    print("Test de avistamientos_por_fecha")
+    indice = avistamientos.avistamientos_por_fecha(datos)
+    print(
+        "Avistamientos por fecha  (solo se muestran 3 fechas aleatorias y 3 avistamientos de cada una máximo):"
+    )
+    for clave, valores in list(indice.items())[:3]:
+        print(clave)
+        for v in list(valores)[:3]:
+            print("\t", v)
+    print("=======================================================\n")
+
+
+def test_formas_por_mes(datos):
+    print("Test de formas_por_mes")
+    indice = avistamientos.formas_por_mes(datos)
     for mes, formas in indice.items():
         print(f"{mes} ==> {sorted(formas)}")
+    print("=======================================================\n")
 
-def test_numero_avistamientos_por_año(avistamientos):  
-    d = av.numero_avistamientos_por_año(avistamientos)
+
+def test_numero_avistamientos_por_año(datos):
+    print("Test de numero_avistamientos_por_año")
+    d = avistamientos.numero_avistamientos_por_año(datos)
     print("Número de avistamientos por año:")
-    mostrar_diccionario2(d)
+    for año, numero in d.items():
+        print(f"{año}: {numero}")
+    print("=======================================================\n")
 
-def test_num_avistamientos_por_mes(avistamientos):  
-    d = av.num_avistamientos_por_mes(avistamientos)
+
+def test_num_avistamientos_por_mes(datos):
+    print("Test de num_avistamientos_por_mes")
+    d = avistamientos.num_avistamientos_por_mes(datos)
     print("Número de avistamientos por mes")
-    mostrar_diccionario2(d)
+    for mes, numero in d.items():
+        print(f"{mes}: {numero}")
+    print("=======================================================\n")
 
-def test_coordenadas_mas_avistamientos(avistamientos):
-    res = av.coordenadas_mas_avistamientos(avistamientos)
-    print(f"Coordenadas redondeadas de la región en la que se observaron más avistamientos: ({res.latitud}, {res.longitud})") 
 
-def test_hora_mas_avistamientos(avistamientos):
-    res = av.hora_mas_avistamientos(avistamientos)
+def test_coordenadas_mas_avistamientos(datos):
+    print("Test de coordenadas_mas_avistamientos")
+    res = avistamientos.coordenadas_mas_avistamientos(datos)
+    print(
+        f"Coordenadas redondeadas de la región en la que se observaron más avistamientos: ({res.latitud}, {res.longitud})"
+    )
+    print("=======================================================\n")
+
+
+def test_hora_mas_avistamientos(datos):
+    print("Test de hora_mas_avistamientos")
+    res = avistamientos.hora_mas_avistamientos(datos)
     print(f"Hora en la que se han observado más avistamientos: {res}")
+    print("=======================================================\n")
 
-def test_longitud_media_comentarios_por_estado(avistamientos):
-    res = av.longitud_media_comentarios_por_estado(avistamientos)
-    print("Mostrando la media de la longitud de los comentarios de los avistamientos de los estados:")
-    mostrar_diccionario2(res)
 
-def test_porc_avistamientos_por_forma(avistamientos):
-    res = av.porc_avistamientos_por_forma(avistamientos)
+def test_longitud_media_comentarios_por_estado(datos):
+    print("Test de longitud_media_comentarios_por_estado")
+    d = avistamientos.longitud_media_comentarios_por_estado(datos)
+    print(
+        "Mostrando la media de la longitud de los comentarios de los avistamientos de los estados:"
+    )
+    for estado, longitud in d.items():
+        print(f"{estado}: {longitud}")
+    print("=======================================================\n")
+
+
+def test_porc_avistamientos_por_forma(datos):
+    print("Test de porc_avistamientos_por_forma")
+    d = avistamientos.porc_avistamientos_por_forma(datos)
     print("Porcentajes de avistamientos de las distintas formas")
-    mostrar_diccionario2(res)
+    for forma, porcentaje in d.items():
+        print(f"{forma}: {porcentaje}")
+    print("=======================================================\n")
 
-def test_avistamientos_mayor_duracion_por_estado(avistamientos, n=3):
-    res = av.avistamientos_mayor_duracion_por_estado(avistamientos, n)
-    print(f"Mostrando los {n} avistamientos de mayor duración por estado")
-    mostrar_diccionario(res)
 
-def test_año_mas_avistamientos_forma(avistamientos, forma):
-    año = av.año_mas_avistamientos_forma(avistamientos, forma)
-    print(f"Año con más avistamientos de tipo '{forma}': {año}")
+def test_avistamientos_mayor_duracion_por_estado(datos):
+    print("Test de avistamientos_mayor_duracion_por_estado")
+    d = avistamientos.avistamientos_mayor_duracion_por_estado(datos)
+    print(f"Mostrando los 3 avistamientos de mayor duración por estado")
+    for estado, av in d.items():
+        print(estado)
+        for a in av:
+            print("\t", av)
+    print("=======================================================\n")
 
-def test_estados_mas_avistamientos(avistamientos, n=5):
-    estados = av.estados_mas_avistamientos(avistamientos, n)
-    print(f"Estados con más avistamientos, de mayor a menor nº de avistamientos: {estados}")
 
-def test_duracion_total_avistamientos_año(avistamientos, estado):
-    indice = av.duracion_total_avistamientos_año(avistamientos, estado)
-    print(f"Mostrando la duración total de los avistamientos por año en el estado {estado}")
-    mostrar_diccionario2(indice)
+def test_año_mas_avistamientos_forma(datos):
+    print("Test de año_mas_avistamientos_forma")
+    año = avistamientos.año_mas_avistamientos_forma(datos, "circle")
+    print(f"Año con más avistamientos de tipo 'circle': {año}")
+    print("=======================================================\n")
 
-def test_avistamiento_mas_reciente_por_estado(avistamientos):
-    indice = av.avistamiento_mas_reciente_por_estado(avistamientos)
+
+def test_estados_mas_avistamientos(datos):
+    print("Test de estados_mas_avistamientos")
+    estados = avistamientos.estados_mas_avistamientos(datos)
+    print(
+        f"Estados con más avistamientos, de mayor a menor nº de avistamientos: {estados}"
+    )
+    print("=======================================================\n")
+
+
+def test_duracion_total_avistamientos_año(datos):
+    print("Test de duracion_total_avistamientos_año")
+    d = avistamientos.duracion_total_avistamientos_año(datos, "ca")
+    print(
+        f"Mostrando la duración total de los avistamientos por año en el estado 'ca'"
+    )
+    for año, duracion in d.items():
+        print(f"{año}: {duracion}")
+    print("=======================================================\n")
+
+
+def test_avistamiento_mas_reciente_por_estado(datos):
+    print("Test de avistamiento_mas_reciente_por_estado")
+    d = avistamientos.avistamiento_mas_reciente_por_estado(datos)
     print("Mostrando la fecha del último avistamiento por estado")
-    mostrar_diccionario2(indice)
-
-def main():
-    # Establecemos la configuración local de la hora al formato
-    # que esté definido en el ordenador del usuario
-    locale.setlocale(locale.LC_TIME, '')
-
-    avistamientos = av.lee_avistamientos("data/ovnis.csv")
-    test_lee_avistamientos (avistamientos)
-
-    ### 2.1 ##########################################################
-    print("2.1" , "#"*70)
-    fecha = datetime(2005, 5, 1).date()
-    test_numero_avistamientos_fecha(avistamientos, fecha)
+    for estado, fecha in d.items():
+        print(f"{estado}: {fecha}")
+    print("=======================================================\n")
 
 
-    ### 2.2 ##########################################################
-    print("2.2" , "#"*70)
-    conjunto_estados = {'in', 'nm', 'pa', 'wa'}
-    test_formas_estados(avistamientos, conjunto_estados)
-
-    ### 2.3 ##########################################################
-    print("2.3" , "#"*70)
-    for estado in conjunto_estados:
-        test_duracion_total(avistamientos, estado)
-
-    ### 2.4 ##########################################################
-    print("2.4" , "#"*70)
-    coordenadas = Coordenadas(40.1933333,-85.3863889)
-    radio = 0.1        
-    test_avistamientos_cercanos_ubicacion(avistamientos,coordenadas, radio)
-
-    ### 3.1 ##########################################################
-    print("3.1" , "#"*70)
-    forma = 'circle'
-    test_avistamiento_mayor_duracion(avistamientos, forma)
-
-    ### 3.2 ##########################################################
-    print("3.2" , "#"*70)
-    test_avistamiento_cercano_mayor_duracion(avistamientos, coordenadas)
-
-    ### 3.3 ##########################################################
-    print("3.3" , "#"*70)
-    f1 =  datetime(2005,5,1).date()
-    f2 = datetime(2005,5,1).date()
-    test_avistamientos_fechas(avistamientos, f1, f2)
-    test_avistamientos_fechas(avistamientos,  fecha_final=f1)
-    test_avistamientos_fechas(avistamientos,  fecha_inicial=f1)
-
-    ### 3.4 ##########################################################
-    print("3.4" , "#"*70)
-    test_comentario_mas_largo(avistamientos, 2005, "ufo")
-    
-    ### 3.5 ##########################################################
-    print("3.5" , "#"*70)
-    test_media_dias_entre_avistamientos(avistamientos)
-    test_media_dias_entre_avistamientos(avistamientos, 1979)
-
-    ### 4.1 ##########################################################
-    print("4.1" , "#"*70)
-    test_avistamientos_por_fecha(avistamientos)
-
-    ### 4.2 ##########################################################
-    print("4.2" , "#"*70)
-    test_formas_por_mes(avistamientos)
-
-    ### 4.3 ##########################################################
-    print("4.3" , "#"*70)
-    test_numero_avistamientos_por_año(avistamientos)
-
-    ### 4.4 ##########################################################
-    print("4.4" , "#"*70)
-    test_num_avistamientos_por_mes(avistamientos)
-
-    ### 4.5 ##########################################################
-    print("4.5" , "#"*70)
-    test_coordenadas_mas_avistamientos(avistamientos)
-
-    ### 4.6 ##########################################################
-    print("4.6" , "#"*70)
-    test_hora_mas_avistamientos(avistamientos)
-
-    ### 4.7 ##########################################################
-    print("4.7" , "#"*70)
-    test_longitud_media_comentarios_por_estado(avistamientos)
-
-    ### 4.8 ##########################################################
-    print("4.8" , "#"*70)
-    test_porc_avistamientos_por_forma(avistamientos)
-
-    ### 4.9 ##########################################################
-    print("4.9" , "#"*70)
-    test_avistamientos_mayor_duracion_por_estado(avistamientos)
-
-    ### 4.10 ##########################################################
-    print("4.10" , "#"*70)
-    test_año_mas_avistamientos_forma(avistamientos, 'circle')
-
-    ### 4.11 ##########################################################
-    print("4.11" , "#"*70)
-    test_estados_mas_avistamientos(avistamientos)
-
-    ### 4.12 ##########################################################
-    print("4.12" , "#"*70)
-    test_duracion_total_avistamientos_año(avistamientos, 'ca')
-
-    ### 4.13 ##########################################################
-    print("4.13" , "#"*70)
-    test_avistamiento_mas_reciente_por_estado(avistamientos)
-
-if __name__=="__main__":
-    main()
+if __name__ == "__main__":
+    datos = avistamientos.lee_avistamientos("data/ovnis.csv")
+    test_lee_avistamientos(datos)
+    # test_numero_avistamientos_fecha(datos)
+    # test_formas_estados(datos)
+    # test_duracion_total(datos)
+    # test_avistamientos_cercanos_ubicacion(datos)
+    # test_avistamiento_mayor_duracion(datos)
+    # test_avistamiento_cercano_mayor_duracion(datos)
+    # test_avistamientos_fechas_1(datos)
+    # test_avistamientos_fechas_2(datos)
+    # test_avistamientos_fechas_3(datos)
+    # test_comentario_mas_largo(datos)
+    # test_media_dias_entre_avistamientos_1(datos)
+    # test_media_dias_entre_avistamientos_2(datos)
+    # test_avistamientos_por_fecha(datos)
+    # test_formas_por_mes(datos)
+    # test_numero_avistamientos_por_año(datos)
+    # test_num_avistamientos_por_mes(datos)
+    # test_coordenadas_mas_avistamientos(datos)
+    # test_hora_mas_avistamientos(datos)
+    # test_longitud_media_comentarios_por_estado(datos)
+    # test_porc_avistamientos_por_forma(datos)
+    # test_avistamientos_mayor_duracion_por_estado(datos)
+    # test_año_mas_avistamientos_forma(datos)
+    # test_estados_mas_avistamientos(datos)
+    # test_duracion_total_avistamientos_año(datos)
+    # test_avistamiento_mas_reciente_por_estado(datos)
